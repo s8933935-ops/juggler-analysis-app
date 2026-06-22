@@ -154,9 +154,28 @@
                 </select>
               </div>
               
+              <!-- Start from Middle Option -->
+              <div class="form-group" style="margin-top: 1rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.9rem; font-weight: 600; color: var(--text-secondary);">
+                  <input type="checkbox" id="calc-start-middle" style="transform: scale(1.2);">
+                  <span>途中から打ち始め (データ機を引き継ぐ)</span>
+                </label>
+              </div>
+              
+              <!-- Start G Input -->
+              <div class="form-group" id="calc-start-spins-wrapper" style="display: none;">
+                <label class="form-label" for="calc-start-spins">打ち始めゲーム数 (Start G)</label>
+                <input class="form-control" type="number" id="calc-start-spins" value="0" min="0" placeholder="例: 2000">
+              </div>
+              
               <!-- Spins Input and Counter Buttons -->
               <div class="form-group">
-                <label class="form-label" for="calc-spins">総ゲーム数 (G)</label>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                  <label class="form-label" for="calc-spins" style="margin-bottom: 0;">データ表示機ゲーム数 (現在の総回転数)</label>
+                  <span id="player-spins-wrapper" style="font-size: 0.8rem; color: var(--text-secondary); display: none;">
+                    自分の消化G: <strong id="player-spins-display" style="color: var(--color-pink-light);">0</strong> G
+                  </span>
+                </div>
                 <div class="counter-input-group">
                   <input class="form-control" type="number" id="calc-spins" value="1000" min="1" placeholder="例: 3000">
                   <div class="counter-buttons">

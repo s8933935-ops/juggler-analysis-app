@@ -19,6 +19,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const probabilityBars = document.getElementById("probability-bars");
   const highSettingsTotalLabel = document.getElementById("high-settings-total");
   
+  // Decoupled Counter Elements
+  const calcStartMiddleCheckbox = document.getElementById("calc-start-middle");
+  const calcStartSpinsWrapper = document.getElementById("calc-start-spins-wrapper");
+  const calcStartSpinsInput = document.getElementById("calc-start-spins");
+  const playerSpinsWrapper = document.getElementById("player-spins-wrapper");
+  const playerSpinsDisplay = document.getElementById("player-spins-display");
+  
   // Upgraded Session UI Elements
   const btnAddSessionToggle = document.getElementById("btn-add-session-toggle");
   const addSessionForm = document.getElementById("add-session-form");
@@ -235,6 +242,8 @@ document.addEventListener("DOMContentLoaded", () => {
           name: "マイジャグV 501番台",
           modelKey: "my_juggler_v",
           spins: 1000,
+          startSpins: 0,
+          isStartMiddle: false,
           big: 3,
           reg: 4,
           grape: 160,
@@ -248,6 +257,12 @@ document.addEventListener("DOMContentLoaded", () => {
         ? activeId 
         : sessions[0].id;
     }
+    
+    // Support retro-compatibility for older saved sessions without start G fields
+    sessions.forEach(s => {
+      if (s.startSpins === undefined) s.startSpins = 0;
+      if (s.isStartMiddle === undefined) s.isStartMiddle = false;
+    });
     
     saveStateToStorage();
     renderSessionPills();
@@ -287,14 +302,30 @@ document.addEventListener("DOMContentLoaded", () => {
     calcUseGrapeCheckbox.checked = active.useGrape;
     calcGrapeInput.value = active.grape;
     
+    // Decoupled Counter values
+    calcStartMiddleCheckbox.checked = active.isStartMiddle;
+    calcStartSpinsInput.value = active.startSpins;
+    calcStartSpinsWrapper.style.display = active.isStartMiddle ? "block" : "none";
+    playerSpinsWrapper.style.display = active.isStartMiddle ? "inline" : "none";
+    
     calcGrapeWrapper.style.display = active.useGrape ? "block" : "none";
     activeSessionNameDisplay.textContent = active.name;
     liveEstSessionName.textContent = `[${active.name}]`;
     
+    updatePlayerSpinsDisplay();
     renderCheckpointsList(active.checkpoints);
     
     // Automatically trigger calculation on load
     runCalculation();
+  }
+  
+  function updatePlayerSpinsDisplay() {
+    const spins = parseInt(calcSpinsInput.value, 10) || 0;
+    const startSpins = parseInt(calcStartSpinsInput.value, 10) || 0;
+    const isStartMiddle = calcStartMiddleCheckbox.checked;
+    
+    const playerSpins = isStartMiddle ? Math.max(0, spins - startSpins) : spins;
+    playerSpinsDisplay.textContent = playerSpins;
   }
   
   function runCalculation() {
@@ -305,12 +336,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const useGrape = calcUseGrapeCheckbox.checked;
     const grape = useGrape ? (parseInt(calcGrapeInput.value, 10) || 0) : null;
     
+    const isStartMiddle = calcStartMiddleCheckbox.checked;
+    const startSpins = parseInt(calcStartSpinsInput.value, 10) || 0;
+    const playerSpins = isStartMiddle ? Math.max(0, spins - startSpins) : spins;
+    
     if (spins <= 0) {
       renderProbabilityBars(null);
       return;
     }
     
-    const posteriors = window.calculateBayesianSettings(modelKey, spins, big, reg, grape, useGrape);
+    // Pass playerSpins as the grapeSpins parameter
+    const posteriors = window.calculateBayesianSettings(modelKey, spins, big, reg, grape, useGrape, playerSpins);
     renderProbabilityBars(posteriors);
   }
   
@@ -325,17 +361,26 @@ document.addEventListener("DOMContentLoaded", () => {
     active.useGrape = calcUseGrapeCheckbox.checked;
     active.grape = parseInt(calcGrapeInput.value, 10) || 0;
     
+    // Decoupled state
+    active.isStartMiddle = calcStartMiddleCheckbox.checked;
+    active.startSpins = parseInt(calcStartSpinsInput.value, 10) || 0;
+    
     saveStateToStorage();
   }
   
   // Bind inputs to save state
-  [calcModelSelect, calcSpinsInput, calcBigInput, calcRegInput, calcUseGrapeCheckbox, calcGrapeInput].forEach(elem => {
+  [
+    calcModelSelect, calcSpinsInput, calcBigInput, calcRegInput, 
+    calcUseGrapeCheckbox, calcGrapeInput, calcStartMiddleCheckbox, calcStartSpinsInput
+  ].forEach(elem => {
     elem.addEventListener("input", () => {
       updateActiveSessionStateFromForm();
+      updatePlayerSpinsDisplay();
       runCalculation();
     });
     elem.addEventListener("change", () => {
       updateActiveSessionStateFromForm();
+      updatePlayerSpinsDisplay();
       runCalculation();
     });
   });
@@ -361,8 +406,8 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("ぶどう回数を正しく入力してください。");
       return;
     }
-    if (big + reg > spins || (useGrape && grape > spins)) {
-      alert("入力された役の回数が総ゲーム数を超えています。");
+    if (big + reg > spins || (useGrape && grape > (calcStartMiddleCheckbox.checked ? Math.max(0, spins - (parseInt(calcStartSpinsInput.value, 10) || 0)) : spins))) {
+      alert("入力された役の回数がゲーム数を超えています。");
       return;
     }
     
@@ -371,6 +416,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
   calcUseGrapeCheckbox.addEventListener("change", (e) => {
     calcGrapeWrapper.style.display = e.target.checked ? "block" : "none";
+  });
+  
+  calcStartMiddleCheckbox.addEventListener("change", (e) => {
+    calcStartSpinsWrapper.style.display = e.target.checked ? "block" : "none";
+    playerSpinsWrapper.style.display = e.target.checked ? "inline" : "none";
+    
+    // Set current spins to start spins to avoid negative own spins initially
+    if (e.target.checked) {
+      const startSpins = parseInt(calcStartSpinsInput.value, 10) || 0;
+      const currentSpins = parseInt(calcSpinsInput.value, 10) || 0;
+      if (currentSpins < startSpins) {
+        calcSpinsInput.value = startSpins;
+      }
+    }
+    
+    updateActiveSessionStateFromForm();
+    updatePlayerSpinsDisplay();
+    runCalculation();
   });
   
   // Quick Counter Tap Handlers
@@ -389,10 +452,17 @@ document.addEventListener("DOMContentLoaded", () => {
         if (targetId === "calc-spins" && newVal < 1) newVal = 1;
         if (targetId !== "calc-spins" && newVal < 0) newVal = 0;
         
+        // If current G goes below start G under middle setup, floor it at start G
+        if (targetId === "calc-spins" && calcStartMiddleCheckbox.checked) {
+          const startG = parseInt(calcStartSpinsInput.value, 10) || 0;
+          if (newVal < startG) newVal = startG;
+        }
+        
         inputElem.value = newVal;
         
         // Update state, calculate, and save
         updateActiveSessionStateFromForm();
+        updatePlayerSpinsDisplay();
         runCalculation();
       }
     }
@@ -417,6 +487,8 @@ document.addEventListener("DOMContentLoaded", () => {
       name: name,
       modelKey: modelKey,
       spins: 1000,
+      startSpins: 0,
+      isStartMiddle: false,
       big: 3,
       reg: 4,
       grape: 160,
@@ -477,13 +549,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const useGrape = calcUseGrapeCheckbox.checked;
     const grape = useGrape ? (parseInt(calcGrapeInput.value, 10) || 0) : 0;
     
+    const isStartMiddle = calcStartMiddleCheckbox.checked;
+    const startSpins = parseInt(calcStartSpinsInput.value, 10) || 0;
+    const playerSpins = isStartMiddle ? Math.max(0, spins - startSpins) : spins;
+    
     if (spins <= 0) {
       alert("記録するデータがありません。ゲーム数を入力して計算してください。");
       return;
     }
     
     // Check constraints
-    if (big + reg > spins || (useGrape && grape > spins)) {
+    if (big + reg > spins || (useGrape && grape > playerSpins)) {
       alert("ボーナスやぶどうの回数がゲーム数を超えています。確認してください。");
       return;
     }
@@ -491,9 +567,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const highSettingsProb = highSettingsTotalLabel.textContent;
     
+    // Format displays Spins (e.g. 3000G (My: 1000G))
+    const spinsDisplayString = isStartMiddle ? `${spins}G (自:${playerSpins}G)` : `${spins}G`;
+    
     const checkpoint = {
       time: timeStr,
-      spins: spins,
+      spins: spinsDisplayString,
       br: `${big} / ${reg}`,
       grape: useGrape ? grape : "-",
       highProb: highSettingsProb
@@ -535,7 +614,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td style="font-family: Outfit; font-weight: 500;">${cp.time}</td>
-        <td style="font-family: Outfit; font-weight: 600;">${cp.spins} G</td>
+        <td style="font-family: Outfit; font-weight: 600;">${cp.spins}</td>
         <td style="font-family: Outfit;">${cp.br}</td>
         <td style="font-family: Outfit;">${cp.grape}</td>
         <td style="font-weight: 700; color: var(--color-pink-light);">${cp.highProb}</td>

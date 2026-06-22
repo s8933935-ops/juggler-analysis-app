@@ -1,7 +1,7 @@
 // Bayesian Setting Estimator for Juggler Slots
 // Numerically stable using log-likelihoods and the log-sum-exp trick
 
-window.calculateBayesianSettings = function(modelKey, spins, bigCount, regCount, grapeCount, useGrape) {
+window.calculateBayesianSettings = function(modelKey, spins, bigCount, regCount, grapeCount, useGrape, grapeSpins = null) {
   const model = window.JugglerModels[modelKey];
   if (!model) return null;
   
@@ -31,7 +31,8 @@ window.calculateBayesianSettings = function(modelKey, spins, bigCount, regCount,
     if (useGrape && grapeCount !== null) {
       const pGrape = window.getGrapeProbability(modelKey, s);
       if (pGrape > 0) {
-        logL += grapeCount * Math.log(pGrape) + (spins - grapeCount) * Math.log(1 - pGrape);
+        const gSpins = (grapeSpins !== null && grapeSpins !== undefined) ? grapeSpins : spins;
+        logL += grapeCount * Math.log(pGrape) + (gSpins - grapeCount) * Math.log(1 - gSpins);
       }
     }
     
