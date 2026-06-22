@@ -8,12 +8,12 @@ window.JugglerModels = {
     cherryPayout: 2,
     grapePayout: 8,
     settings: {
-      1: { bigProb: 273.1, regProb: 409.6, returnRate: 0.970 },
-      2: { bigProb: 270.8, regProb: 385.5, returnRate: 0.980 },
-      3: { bigProb: 266.4, regProb: 341.3, returnRate: 0.999 },
-      4: { bigProb: 254.0, regProb: 292.6, returnRate: 102.8 / 100 },
-      5: { bigProb: 240.9, regProb: 268.6, returnRate: 105.3 / 100 },
-      6: { bigProb: 229.1, regProb: 229.1, returnRate: 109.4 / 100 }
+      1: { bigProb: 273.1, regProb: 409.6, grapeProb: 5.98, returnRate: 0.970 },
+      2: { bigProb: 270.8, regProb: 385.5, grapeProb: 5.88, returnRate: 0.980 },
+      3: { bigProb: 266.4, regProb: 341.3, grapeProb: 5.84, returnRate: 0.999 },
+      4: { bigProb: 254.0, regProb: 292.6, grapeProb: 5.81, returnRate: 102.8 / 100 },
+      5: { bigProb: 240.9, regProb: 268.6, grapeProb: 5.76, returnRate: 105.3 / 100 },
+      6: { bigProb: 229.1, regProb: 229.1, grapeProb: 5.65, returnRate: 109.4 / 100 }
     }
   },
   im_juggler_ex: {
@@ -24,12 +24,12 @@ window.JugglerModels = {
     cherryPayout: 2,
     grapePayout: 8,
     settings: {
-      1: { bigProb: 273.1, regProb: 439.8, returnRate: 0.970 },
-      2: { bigProb: 269.7, regProb: 399.6, returnRate: 0.980 },
-      3: { bigProb: 269.7, regProb: 331.0, returnRate: 0.995 },
-      4: { bigProb: 259.0, regProb: 315.1, returnRate: 101.1 / 100 },
-      5: { bigProb: 259.0, regProb: 255.0, returnRate: 103.3 / 100 },
-      6: { bigProb: 255.0, regProb: 255.0, returnRate: 105.5 / 100 }
+      1: { bigProb: 273.1, regProb: 439.8, grapeProb: 6.02, returnRate: 0.970 },
+      2: { bigProb: 269.7, regProb: 399.6, grapeProb: 6.02, returnRate: 0.980 },
+      3: { bigProb: 269.7, regProb: 331.0, grapeProb: 6.02, returnRate: 0.995 },
+      4: { bigProb: 259.0, regProb: 315.1, grapeProb: 6.02, returnRate: 101.1 / 100 },
+      5: { bigProb: 259.0, regProb: 255.0, grapeProb: 6.02, returnRate: 103.3 / 100 },
+      6: { bigProb: 255.0, regProb: 255.0, grapeProb: 5.78, returnRate: 105.5 / 100 }
     }
   },
   funky_juggler_2: {
@@ -40,12 +40,12 @@ window.JugglerModels = {
     cherryPayout: 2,
     grapePayout: 8,
     settings: {
-      1: { bigProb: 266.4, regProb: 439.8, returnRate: 0.970 },
-      2: { bigProb: 259.0, regProb: 409.6, returnRate: 0.982 },
-      3: { bigProb: 256.0, regProb: 366.1, returnRate: 0.998 },
-      4: { bigProb: 249.2, regProb: 322.8, returnRate: 102.0 / 100 },
-      5: { bigProb: 240.9, regProb: 299.3, returnRate: 104.3 / 100 },
-      6: { bigProb: 219.1, regProb: 262.1, returnRate: 109.0 / 100 }
+      1: { bigProb: 266.4, regProb: 439.8, grapeProb: 5.93, returnRate: 0.970 },
+      2: { bigProb: 259.0, regProb: 409.6, grapeProb: 5.89, returnRate: 0.982 },
+      3: { bigProb: 256.0, regProb: 366.1, grapeProb: 5.82, returnRate: 0.998 },
+      4: { bigProb: 249.2, regProb: 322.8, grapeProb: 5.78, returnRate: 102.0 / 100 },
+      5: { bigProb: 240.9, regProb: 299.3, grapeProb: 5.74, returnRate: 104.3 / 100 },
+      6: { bigProb: 219.1, regProb: 262.1, grapeProb: 5.71, returnRate: 109.0 / 100 }
     }
   },
   happy_juggler_v3: {
@@ -56,38 +56,21 @@ window.JugglerModels = {
     cherryPayout: 2,
     grapePayout: 8,
     settings: {
-      1: { bigProb: 273.1, regProb: 397.2, returnRate: 0.970 },
-      2: { bigProb: 270.8, regProb: 381.0, returnRate: 0.979 },
-      3: { bigProb: 263.2, regProb: 337.8, returnRate: 0.997 },
-      4: { bigProb: 250.1, regProb: 297.9, returnRate: 102.9 / 100 },
-      5: { bigProb: 240.9, regProb: 273.1, returnRate: 105.8 / 100 },
-      6: { bigProb: 226.0, regProb: 226.0, returnRate: 108.4 / 100 }
+      1: { bigProb: 273.1, regProb: 397.2, grapeProb: 6.05, returnRate: 0.970 },
+      2: { bigProb: 270.8, regProb: 381.0, grapeProb: 6.03, returnRate: 0.979 },
+      3: { bigProb: 263.2, regProb: 337.8, grapeProb: 5.97, returnRate: 0.997 },
+      4: { bigProb: 250.1, regProb: 297.9, grapeProb: 5.84, returnRate: 102.9 / 100 },
+      5: { bigProb: 240.9, regProb: 273.1, grapeProb: 5.81, returnRate: 105.8 / 100 },
+      6: { bigProb: 226.0, regProb: 226.0, grapeProb: 5.78, returnRate: 108.4 / 100 }
     }
   }
 };
 
-// Calculate exact grape probability dynamically to match the theoretical return rate
+// Return the exact grape probability (1 / grapeProb) based on target specification
 window.getGrapeProbability = function(modelKey, settingNum) {
   const model = window.JugglerModels[modelKey];
   const setting = model.settings[settingNum];
-  
-  const pReplay = 1 / 7.3;
-  const pBig = 1 / setting.bigProb;
-  const pReg = 1 / setting.regProb;
-  const pCherry = 1 / 35.5; // Average cherry probability
-  
-  const replayPayout = pReplay * 3;
-  const bigPayout = pBig * model.bigPayout;
-  const regPayout = pReg * model.regPayout;
-  const cherryPayout = pCherry * model.cherryPayout;
-  
-  const targetPayout = 3 * setting.returnRate;
-  const currentPayoutSum = replayPayout + bigPayout + regPayout + cherryPayout;
-  
-  const grapePayoutNeeded = targetPayout - currentPayoutSum;
-  const pGrape = grapePayoutNeeded / model.grapePayout;
-  
-  return pGrape;
+  return 1 / setting.grapeProb;
 };
 
 // Spin simulation engine
