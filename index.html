@@ -104,63 +104,191 @@
       <!-- TAB 2: SETTING ESTIMATOR (BAYESIAN) -->
       <section id="tab-estimator" class="tab-pane">
         <div class="card">
-          <h2 class="card-title"><i class="fa-solid fa-calculator"></i> ベイズ推定・設定判別ツール</h2>
-          <p class="guide-desc">現在の回転数と各ボーナス回数を入力することで、ベイズの定理に基づいて各設定である確率（事後確率）をリアルタイムに計算します。</p>
+          <h2 class="card-title"><i class="fa-solid fa-calculator"></i> 実践設定判別 & カウンター</h2>
+          <p class="guide-desc">ホールでの実戦で使える簡易カウンター機能付き設定判別ツールです。ベイズの定理に基づき、各設定の確率をリアルタイムに更新します。</p>
+          
+          <!-- Session Manager Header -->
+          <div class="session-manager-card">
+            <div class="session-manager-title">
+              <span><i class="fa-solid fa-folder-open"></i> 記録台リスト (複数台を並行管理)</span>
+              <button class="btn btn-outline" id="btn-add-session-toggle" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;">
+                <i class="fa-solid fa-plus"></i> 新しい台を追加
+              </button>
+            </div>
+            
+            <!-- Create Session Input Form (Hidden by default) -->
+            <div id="add-session-form" class="session-create-form" style="display: none;">
+              <input type="text" id="new-session-name" class="form-control" placeholder="例: マイジャグ502番台" style="max-width: 250px;">
+              <select class="form-control" id="new-session-model" style="max-width: 200px;">
+                <!-- Filled dynamically -->
+              </select>
+              <button class="btn btn-primary" id="btn-create-session" style="padding: 0.5rem 1.2rem; font-size: 0.9rem;">作成</button>
+            </div>
+            
+            <!-- Session Pills -->
+            <div class="session-pills-container" id="session-pills">
+              <!-- Active sessions dynamically rendered here -->
+            </div>
+            
+            <div class="session-actions" id="session-actions-bar" style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <span class="text-secondary" style="font-size: 0.85rem;">選択中: </span>
+                <strong id="active-session-name-display" style="color: var(--color-pink-light); font-size: 0.95rem;">台 A</strong>
+                <button class="btn btn-outline" id="btn-rename-session" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; margin-left: 0.5rem;">
+                  <i class="fa-solid fa-pen"></i> 名前変更
+                </button>
+              </div>
+              <button class="btn btn-outline" id="btn-delete-session" style="padding: 0.3rem 0.8rem; font-size: 0.8rem; color: #ff758f; border-color: rgba(255, 117, 143, 0.3);">
+                <i class="fa-solid fa-trash-can"></i> この台を削除
+              </button>
+            </div>
+          </div>
           
           <div class="estimator-layout" style="margin-top: 1.5rem;">
-            <!-- Inputs -->
+            <!-- Inputs & Counters -->
             <div class="estimator-inputs">
               <div class="form-group">
-                <label class="form-label" for="calc-model">機種選択</label>
+                <label class="form-label" for="calc-model">機種設定</label>
                 <select class="form-control" id="calc-model">
                   <!-- Dynamically filled -->
                 </select>
               </div>
+              
+              <!-- Spins Input and Counter Buttons -->
               <div class="form-group">
                 <label class="form-label" for="calc-spins">総ゲーム数 (G)</label>
-                <input class="form-control" type="number" id="calc-spins" value="3000" min="1" placeholder="例: 3000">
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="calc-big">BIG回数</label>
-                <input class="form-control" type="number" id="calc-big" value="10" min="0" placeholder="例: 10">
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="calc-reg">REG回数</label>
-                <input class="form-control" type="number" id="calc-reg" value="12" min="0" placeholder="例: 12">
+                <div class="counter-input-group">
+                  <input class="form-control" type="number" id="calc-spins" value="1000" min="1" placeholder="例: 3000">
+                  <div class="counter-buttons">
+                    <button class="btn-counter" data-target="calc-spins" data-val="100">+100</button>
+                    <button class="btn-counter" data-target="calc-spins" data-val="10">+10</button>
+                    <button class="btn-counter" data-target="calc-spins" data-val="1">+1</button>
+                    <button class="btn-counter btn-counter-minus" data-target="calc-spins" data-val="-10">-10</button>
+                  </div>
+                </div>
               </div>
               
+              <!-- BIG Input and Counter Buttons -->
               <div class="form-group">
+                <label class="form-label" for="calc-big">BIG回数</label>
+                <div class="counter-input-group">
+                  <input class="form-control" type="number" id="calc-big" value="3" min="0" placeholder="例: 10">
+                  <div class="counter-buttons-compact">
+                    <button class="btn-counter-large" data-target="calc-big" data-val="1">+1 BIG</button>
+                    <button class="btn-counter btn-counter-minus" data-target="calc-big" data-val="-1">-1</button>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- REG Input and Counter Buttons -->
+              <div class="form-group">
+                <label class="form-label" for="calc-reg">REG回数</label>
+                <div class="counter-input-group">
+                  <input class="form-control" type="number" id="calc-reg" value="4" min="0" placeholder="例: 12">
+                  <div class="counter-buttons-compact">
+                    <button class="btn-counter-large" data-target="calc-reg" data-val="1" style="background: linear-gradient(135deg, #2e1040 0%, #ff007f 100%);">+1 REG</button>
+                    <button class="btn-counter btn-counter-minus" data-target="calc-reg" data-val="-1">-1</button>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Grape Switch -->
+              <div class="form-group" style="margin-top: 1.5rem;">
                 <label class="form-label" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                  <input type="checkbox" id="calc-use-grape" style="transform: scale(1.2);">
-                  <span>ぶどう回数も考慮する (数え値)</span>
+                  <input type="checkbox" id="calc-use-grape" style="transform: scale(1.2);" checked>
+                  <span>ぶどう回数も考慮する (推奨)</span>
                 </label>
               </div>
               
-              <div class="form-group" id="calc-grape-wrapper" style="display: none;">
+              <!-- Grape Input and Counter Buttons -->
+              <div class="form-group" id="calc-grape-wrapper">
                 <label class="form-label" for="calc-grape">ぶどう回数</label>
-                <input class="form-control" type="number" id="calc-grape" value="480" min="0" placeholder="例: 480">
+                <div class="counter-input-group">
+                  <input class="form-control" type="number" id="calc-grape" value="160" min="0" placeholder="例: 480">
+                  <div class="counter-buttons-compact">
+                    <button class="btn-counter-large" data-target="calc-grape" data-val="1" style="background: linear-gradient(135deg, #18112c 0%, #00ff7f 100%); color: #08040f;">+1 ぶどう</button>
+                    <button class="btn-counter btn-counter-minus" data-target="calc-grape" data-val="-1">-1</button>
+                  </div>
+                </div>
               </div>
               
-              <button class="btn btn-primary" id="btn-calculate" style="width: 100%; margin-top: 1rem;">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> 設定を判別する
-              </button>
+              <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button class="btn btn-primary" id="btn-calculate" style="flex: 2;">
+                  <i class="fa-solid fa-wand-magic-sparkles"></i> 判別を実行
+                </button>
+                <button class="btn btn-outline" id="btn-save-checkpoint" style="flex: 1;" title="現在の判別データを履歴に保存します。">
+                  <i class="fa-solid fa-floppy-disk"></i> 記録保存
+                </button>
+              </div>
             </div>
             
             <!-- Outputs -->
             <div class="estimator-results">
-              <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">設定推測結果の分布</h3>
+              <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; display: flex; justify-content: space-between;">
+                <span>設定推測結果の分布</span>
+                <span id="live-est-session-name" style="font-size: 0.85rem; color: var(--text-secondary);"></span>
+              </h3>
               
               <div class="probability-bar-list" id="probability-bars">
                 <!-- Bars will be dynamically generated here -->
               </div>
               
-              <div style="margin-top: 2rem; padding: 1.2rem; background-color: rgba(157, 78, 221, 0.1); border-radius: 8px; border: 1px dashed var(--bg-card-border);">
+              <div style="margin-top: 1.5rem; padding: 1.2rem; background-color: rgba(157, 78, 221, 0.1); border-radius: 8px; border: 1px dashed var(--bg-card-border);">
                 <div style="display: flex; justify-content: space-between; font-size: 0.95rem; font-weight: 700;">
                   <span>高設定 (設定4・5・6) の可能性:</span>
                   <span id="high-settings-total" style="color: var(--color-pink-light); font-size: 1.1rem;">0.00%</span>
                 </div>
               </div>
+              
+              <!-- Log history inside Tab -->
+              <div class="checkpoint-history-section" style="margin-top: 1.5rem;">
+                <h4 style="font-size: 0.9rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-secondary); display: flex; justify-content: space-between; align-items: center;">
+                  <span><i class="fa-solid fa-history"></i> この台のセーブ履歴 (時系列)</span>
+                  <button class="btn btn-outline" id="btn-clear-history" style="padding: 0.1rem 0.4rem; font-size: 0.7rem; border-color: rgba(255, 117, 143, 0.2); color: #ff758f;">履歴クリア</button>
+                </h4>
+                <div class="checkpoint-history-table-wrapper">
+                  <table class="spec-table" style="font-size: 0.8rem;">
+                    <thead>
+                      <tr>
+                        <th>時間</th>
+                        <th>ゲーム数</th>
+                        <th>B / R</th>
+                        <th>ぶどう</th>
+                        <th>高設定確率</th>
+                      </tr>
+                    </thead>
+                    <tbody id="checkpoint-history-rows">
+                      <tr>
+                        <td colspan="5" style="text-align: center; color: var(--text-muted);">記録されたデータはありません</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
+          </div>
+          
+          <!-- Grape Explanation Card -->
+          <div class="grape-discrepancy-card" style="margin-top: 2rem; padding: 1.5rem; background: rgba(25, 17, 43, 0.4); border: 1px solid var(--bg-card-border); border-radius: 12px;">
+            <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem;">
+              <i class="fa-solid fa-circle-info" style="color: var(--color-violet-light);"></i> ぶどう確率の表記・設定差に関する重要なお知らせ
+            </h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+              インターネット上の設定判別サイトによって、ぶどう確率の数値にわずかなズレ（例: アイムジャグラーEXの設定1〜5で「1/6.02」と「1/6.07」など）が見られる場合があります。これは<b>どちらかが間違っているわけではありません</b>。
+            </p>
+            <div class="grid-2" style="gap: 1.2rem; margin-top: 1rem;">
+              <div style="background: rgba(8, 4, 15, 0.4); padding: 0.8rem; border-radius: 6px; border: 1px solid rgba(157, 78, 221, 0.1);">
+                <strong style="font-size: 0.85rem; color: var(--color-violet-light); display: block; margin-bottom: 0.3rem;">① アプリシミュレーター算出値（当アプリ採用）</strong>
+                <span style="font-size: 0.8rem; color: var(--text-secondary);">メーカー発表の機械割に理論上合致するよう「チェリー完全奪取・チェリー重複込み」などの計算モデルから逆算した値です。モンテカルロシミュレータの挙動と一致します。</span>
+              </div>
+              <div style="background: rgba(8, 4, 15, 0.4); padding: 0.8rem; border-radius: 6px; border: 1px solid rgba(157, 78, 221, 0.1);">
+                <strong style="font-size: 0.85rem; color: var(--color-pink-light); display: block; margin-bottom: 0.3rem;">② 実戦サンプル採取値（大手データサイト等）</strong>
+                <span style="font-size: 0.8rem; color: var(--text-secondary);">実際のホールでの稼働サンプル（DMMぱちタウンや一撃などの実戦値）の平均値です。打ち手の目押しミスによる小役取りこぼしや、サンプル数の偏りが含まれています。</span>
+              </div>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem;">
+              ※当アプリでは設定推測およびシミュレーションの整合性を保つため、<b>①のシミュレータ理論値（1/6.02等）</b>を基準値として使用していますが、実戦値との差はわずか数％であり、ベイズ設定判別の結果に与える影響はごくわずかですのでご安心ください。
+            </p>
           </div>
         </div>
       </section>

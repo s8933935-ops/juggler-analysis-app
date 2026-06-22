@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const specCardsContainer = document.getElementById("spec-cards-container");
   const specDetailBody = document.getElementById("spec-detail-body");
   
-  // Estimator elements
+  // Estimator Elements (Upgraded)
   const calcModelSelect = document.getElementById("calc-model");
   const calcSpinsInput = document.getElementById("calc-spins");
   const calcBigInput = document.getElementById("calc-big");
@@ -18,6 +18,23 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnCalculate = document.getElementById("btn-calculate");
   const probabilityBars = document.getElementById("probability-bars");
   const highSettingsTotalLabel = document.getElementById("high-settings-total");
+  
+  // Upgraded Session UI Elements
+  const btnAddSessionToggle = document.getElementById("btn-add-session-toggle");
+  const addSessionForm = document.getElementById("add-session-form");
+  const newSessionNameInput = document.getElementById("new-session-name");
+  const newSessionModelSelect = document.getElementById("new-session-model");
+  const btnCreateSession = document.getElementById("btn-create-session");
+  const sessionPillsContainer = document.getElementById("session-pills");
+  const activeSessionNameDisplay = document.getElementById("active-session-name-display");
+  const btnRenameSession = document.getElementById("btn-rename-session");
+  const btnDeleteSession = document.getElementById("btn-delete-session");
+  const liveEstSessionName = document.getElementById("live-est-session-name");
+  
+  // Checkpoint History UI Elements
+  const btnSaveCheckpoint = document.getElementById("btn-save-checkpoint");
+  const btnClearHistory = document.getElementById("btn-clear-history");
+  const checkpointHistoryRows = document.getElementById("checkpoint-history-rows");
   
   // Slump elements
   const slumpModelSelect = document.getElementById("slump-target-model");
@@ -49,6 +66,10 @@ document.addEventListener("DOMContentLoaded", () => {
   let islandSettings = [];
   let isSimulating = false;
   
+  // Upgraded Estimator Multi-Session State
+  let sessions = [];
+  let currentSessionId = "";
+  
   // Web Audio Context for synthesizer
   let audioCtx = null;
 
@@ -62,6 +83,12 @@ document.addEventListener("DOMContentLoaded", () => {
       opt1.value = key;
       opt1.textContent = model.name;
       calcModelSelect.appendChild(opt1);
+      
+      // New Session dropdown
+      const optNew = document.createElement("option");
+      optNew.value = key;
+      optNew.textContent = model.name;
+      newSessionModelSelect.appendChild(optNew);
       
       // Slump model dropdown
       const opt2 = document.createElement("option");
@@ -185,9 +212,136 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // --- Calculate Bayesian Settings Click Handler ---
-  btnCalculate.addEventListener("click", () => {
+  // --- Multi-Session & Counter Controller Upgrades ---
+  
+  function initSessions() {
+    // Load from local storage
+    const stored = localStorage.getItem("juggler_estimator_sessions");
+    const activeId = localStorage.getItem("juggler_current_session_id");
+    
+    if (stored) {
+      try {
+        sessions = JSON.parse(stored);
+      } catch (e) {
+        sessions = [];
+      }
+    }
+    
+    if (!sessions || sessions.length === 0) {
+      // Default initial session
+      sessions = [
+        {
+          id: "session_" + Date.now(),
+          name: "マイジャグV 501番台",
+          modelKey: "my_juggler_v",
+          spins: 1000,
+          big: 3,
+          reg: 4,
+          grape: 160,
+          useGrape: true,
+          checkpoints: []
+        }
+      ];
+      currentSessionId = sessions[0].id;
+    } else {
+      currentSessionId = activeId && sessions.find(s => s.id === activeId) 
+        ? activeId 
+        : sessions[0].id;
+    }
+    
+    saveStateToStorage();
+    renderSessionPills();
+    loadActiveSessionToForm();
+  }
+  
+  function saveStateToStorage() {
+    localStorage.setItem("juggler_estimator_sessions", JSON.stringify(sessions));
+    localStorage.setItem("juggler_current_session_id", currentSessionId);
+  }
+  
+  function renderSessionPills() {
+    sessionPillsContainer.innerHTML = "";
+    sessions.forEach(s => {
+      const pill = document.createElement("div");
+      pill.className = `session-pill ${s.id === currentSessionId ? 'active' : ''}`;
+      pill.textContent = s.name;
+      pill.addEventListener("click", () => {
+        // Switch session
+        currentSessionId = s.id;
+        saveStateToStorage();
+        renderSessionPills();
+        loadActiveSessionToForm();
+      });
+      sessionPillsContainer.appendChild(pill);
+    });
+  }
+  
+  function loadActiveSessionToForm() {
+    const active = sessions.find(s => s.id === currentSessionId);
+    if (!active) return;
+    
+    calcModelSelect.value = active.modelKey;
+    calcSpinsInput.value = active.spins;
+    calcBigInput.value = active.big;
+    calcRegInput.value = active.reg;
+    calcUseGrapeCheckbox.checked = active.useGrape;
+    calcGrapeInput.value = active.grape;
+    
+    calcGrapeWrapper.style.display = active.useGrape ? "block" : "none";
+    activeSessionNameDisplay.textContent = active.name;
+    liveEstSessionName.textContent = `[${active.name}]`;
+    
+    renderCheckpointsList(active.checkpoints);
+    
+    // Automatically trigger calculation on load
+    runCalculation();
+  }
+  
+  function runCalculation() {
     const modelKey = calcModelSelect.value;
+    const spins = parseInt(calcSpinsInput.value, 10) || 0;
+    const big = parseInt(calcBigInput.value, 10) || 0;
+    const reg = parseInt(calcRegInput.value, 10) || 0;
+    const useGrape = calcUseGrapeCheckbox.checked;
+    const grape = useGrape ? (parseInt(calcGrapeInput.value, 10) || 0) : null;
+    
+    if (spins <= 0) {
+      renderProbabilityBars(null);
+      return;
+    }
+    
+    const posteriors = window.calculateBayesianSettings(modelKey, spins, big, reg, grape, useGrape);
+    renderProbabilityBars(posteriors);
+  }
+  
+  function updateActiveSessionStateFromForm() {
+    const active = sessions.find(s => s.id === currentSessionId);
+    if (!active) return;
+    
+    active.modelKey = calcModelSelect.value;
+    active.spins = parseInt(calcSpinsInput.value, 10) || 0;
+    active.big = parseInt(calcBigInput.value, 10) || 0;
+    active.reg = parseInt(calcRegInput.value, 10) || 0;
+    active.useGrape = calcUseGrapeCheckbox.checked;
+    active.grape = parseInt(calcGrapeInput.value, 10) || 0;
+    
+    saveStateToStorage();
+  }
+  
+  // Bind inputs to save state
+  [calcModelSelect, calcSpinsInput, calcBigInput, calcRegInput, calcUseGrapeCheckbox, calcGrapeInput].forEach(elem => {
+    elem.addEventListener("input", () => {
+      updateActiveSessionStateFromForm();
+      runCalculation();
+    });
+    elem.addEventListener("change", () => {
+      updateActiveSessionStateFromForm();
+      runCalculation();
+    });
+  });
+
+  // Calculate Button Click
+  btnCalculate.addEventListener("click", () => {
     const spins = parseInt(calcSpinsInput.value, 10);
     const big = parseInt(calcBigInput.value, 10);
     const reg = parseInt(calcRegInput.value, 10);
@@ -212,13 +366,183 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     
-    const posteriors = window.calculateBayesianSettings(modelKey, spins, big, reg, grape, useGrape);
-    renderProbabilityBars(posteriors);
+    runCalculation();
   });
 
   calcUseGrapeCheckbox.addEventListener("change", (e) => {
     calcGrapeWrapper.style.display = e.target.checked ? "block" : "none";
   });
+  
+  // Quick Counter Tap Handlers
+  document.addEventListener("click", (e) => {
+    const target = e.target;
+    if (target && (target.classList.contains("btn-counter") || target.classList.contains("btn-counter-large"))) {
+      const targetId = target.getAttribute("data-target");
+      const valToAdd = parseInt(target.getAttribute("data-val"), 10);
+      const inputElem = document.getElementById(targetId);
+      
+      if (inputElem) {
+        let currentVal = parseInt(inputElem.value, 10) || 0;
+        let newVal = currentVal + valToAdd;
+        
+        // Floor checks
+        if (targetId === "calc-spins" && newVal < 1) newVal = 1;
+        if (targetId !== "calc-spins" && newVal < 0) newVal = 0;
+        
+        inputElem.value = newVal;
+        
+        // Update state, calculate, and save
+        updateActiveSessionStateFromForm();
+        runCalculation();
+      }
+    }
+  });
+
+  // Session Manager Actions
+  btnAddSessionToggle.addEventListener("click", () => {
+    const isHidden = addSessionForm.style.display === "none";
+    addSessionForm.style.display = isHidden ? "flex" : "none";
+    if (isHidden) {
+      newSessionNameInput.value = `台 ${sessions.length + 1}`;
+      newSessionNameInput.focus();
+    }
+  });
+  
+  btnCreateSession.addEventListener("click", () => {
+    const name = newSessionNameInput.value.trim() || `台 ${sessions.length + 1}`;
+    const modelKey = newSessionModelSelect.value;
+    
+    const newSession = {
+      id: "session_" + Date.now(),
+      name: name,
+      modelKey: modelKey,
+      spins: 1000,
+      big: 3,
+      reg: 4,
+      grape: 160,
+      useGrape: true,
+      checkpoints: []
+    };
+    
+    sessions.push(newSession);
+    currentSessionId = newSession.id;
+    
+    saveStateToStorage();
+    renderSessionPills();
+    loadActiveSessionToForm();
+    
+    addSessionForm.style.display = "none";
+  });
+  
+  btnRenameSession.addEventListener("click", () => {
+    const active = sessions.find(s => s.id === currentSessionId);
+    if (!active) return;
+    
+    const newName = prompt("台の新しい名前を入力してください:", active.name);
+    if (newName && newName.trim()) {
+      active.name = newName.trim();
+      saveStateToStorage();
+      renderSessionPills();
+      loadActiveSessionToForm();
+    }
+  });
+  
+  btnDeleteSession.addEventListener("click", () => {
+    if (sessions.length <= 1) {
+      alert("最後の1台を削除することはできません。");
+      return;
+    }
+    
+    const active = sessions.find(s => s.id === currentSessionId);
+    if (!active) return;
+    
+    if (confirm(`本当に「${active.name}」のデータを削除しますか？`)) {
+      sessions = sessions.filter(s => s.id !== currentSessionId);
+      currentSessionId = sessions[0].id;
+      
+      saveStateToStorage();
+      renderSessionPills();
+      loadActiveSessionToForm();
+    }
+  });
+  
+  // Checkpoint Logs
+  btnSaveCheckpoint.addEventListener("click", () => {
+    const active = sessions.find(s => s.id === currentSessionId);
+    if (!active) return;
+    
+    const spins = parseInt(calcSpinsInput.value, 10) || 0;
+    const big = parseInt(calcBigInput.value, 10) || 0;
+    const reg = parseInt(calcRegInput.value, 10) || 0;
+    const useGrape = calcUseGrapeCheckbox.checked;
+    const grape = useGrape ? (parseInt(calcGrapeInput.value, 10) || 0) : 0;
+    
+    if (spins <= 0) {
+      alert("記録するデータがありません。ゲーム数を入力して計算してください。");
+      return;
+    }
+    
+    // Check constraints
+    if (big + reg > spins || (useGrape && grape > spins)) {
+      alert("ボーナスやぶどうの回数がゲーム数を超えています。確認してください。");
+      return;
+    }
+    
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const highSettingsProb = highSettingsTotalLabel.textContent;
+    
+    const checkpoint = {
+      time: timeStr,
+      spins: spins,
+      br: `${big} / ${reg}`,
+      grape: useGrape ? grape : "-",
+      highProb: highSettingsProb
+    };
+    
+    if (!active.checkpoints) active.checkpoints = [];
+    active.checkpoints.push(checkpoint);
+    
+    saveStateToStorage();
+    renderCheckpointsList(active.checkpoints);
+  });
+  
+  btnClearHistory.addEventListener("click", () => {
+    const active = sessions.find(s => s.id === currentSessionId);
+    if (!active) return;
+    
+    if (confirm("この台のセーブ履歴をすべて消去しますか？（現在のゲームカウントはリセットされません）")) {
+      active.checkpoints = [];
+      saveStateToStorage();
+      renderCheckpointsList(active.checkpoints);
+    }
+  });
+  
+  function renderCheckpointsList(checkpoints = []) {
+    checkpointHistoryRows.innerHTML = "";
+    
+    if (!checkpoints || checkpoints.length === 0) {
+      checkpointHistoryRows.innerHTML = `
+        <tr>
+          <td colspan="5" style="text-align: center; color: var(--text-muted);">記録されたデータはありません</td>
+        </tr>
+      `;
+      return;
+    }
+    
+    // Render in reverse chronological order (newest first)
+    const reversed = [...checkpoints].reverse();
+    reversed.forEach(cp => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td style="font-family: Outfit; font-weight: 500;">${cp.time}</td>
+        <td style="font-family: Outfit; font-weight: 600;">${cp.spins} G</td>
+        <td style="font-family: Outfit;">${cp.br}</td>
+        <td style="font-family: Outfit;">${cp.grape}</td>
+        <td style="font-weight: 700; color: var(--color-pink-light);">${cp.highProb}</td>
+      `;
+      checkpointHistoryRows.appendChild(tr);
+    });
+  }
 
   // --- Update Slump Probability Tables ---
   function updateSlumpTable() {
@@ -402,9 +726,6 @@ document.addEventListener("DOMContentLoaded", () => {
           } else {
             cabinet.classList.remove("hit-1000");
           }
-          
-          // Flashes lamp momentarily on individual jackpot hits during steps
-          // Or just light GOGO permanently if S1000 is met
         });
       },
       // onComplete callback
@@ -574,9 +895,9 @@ document.addEventListener("DOMContentLoaded", () => {
   initDropdowns();
   renderSpecCards();
   renderGuide();
+  initSessions(); // Upgraded Session Init
   
   // Set default calculator values
-  calcModelSelect.value = "my_juggler_v";
   slumpModelSelect.value = "my_juggler_v";
   simModelSelect.value = "my_juggler_v";
   simPresetSelect.value = "all-1";
