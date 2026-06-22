@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Estimator Elements (Upgraded)
   const calcModelSelect = document.getElementById("calc-model");
   const calcSpinsInput = document.getElementById("calc-spins");
+  const calcCurrentGInput = document.getElementById("calc-current-g");
   const calcBigInput = document.getElementById("calc-big");
   const calcRegInput = document.getElementById("calc-reg");
   const calcUseGrapeCheckbox = document.getElementById("calc-use-grape");
@@ -242,6 +243,7 @@ document.addEventListener("DOMContentLoaded", () => {
           name: "マイジャグV 501番台",
           modelKey: "my_juggler_v",
           spins: 1000,
+          currentG: 0,
           startSpins: 0,
           isStartMiddle: false,
           big: 3,
@@ -258,10 +260,11 @@ document.addEventListener("DOMContentLoaded", () => {
         : sessions[0].id;
     }
     
-    // Support retro-compatibility for older saved sessions without start G fields
+    // Support retro-compatibility for older saved sessions
     sessions.forEach(s => {
       if (s.startSpins === undefined) s.startSpins = 0;
       if (s.isStartMiddle === undefined) s.isStartMiddle = false;
+      if (s.currentG === undefined) s.currentG = 0;
     });
     
     saveStateToStorage();
@@ -297,6 +300,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     calcModelSelect.value = active.modelKey;
     calcSpinsInput.value = active.spins;
+    calcCurrentGInput.value = active.currentG;
     calcBigInput.value = active.big;
     calcRegInput.value = active.reg;
     calcUseGrapeCheckbox.checked = active.useGrape;
@@ -356,6 +360,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     active.modelKey = calcModelSelect.value;
     active.spins = parseInt(calcSpinsInput.value, 10) || 0;
+    active.currentG = parseInt(calcCurrentGInput.value, 10) || 0;
     active.big = parseInt(calcBigInput.value, 10) || 0;
     active.reg = parseInt(calcRegInput.value, 10) || 0;
     active.useGrape = calcUseGrapeCheckbox.checked;
@@ -370,7 +375,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
   // Bind inputs to save state
   [
-    calcModelSelect, calcSpinsInput, calcBigInput, calcRegInput, 
+    calcModelSelect, calcSpinsInput, calcCurrentGInput, calcBigInput, calcRegInput, 
     calcUseGrapeCheckbox, calcGrapeInput, calcStartMiddleCheckbox, calcStartSpinsInput
   ].forEach(elem => {
     elem.addEventListener("input", () => {
@@ -406,7 +411,12 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("ぶどう回数を正しく入力してください。");
       return;
     }
-    if (big + reg > spins || (useGrape && grape > (calcStartMiddleCheckbox.checked ? Math.max(0, spins - (parseInt(calcStartSpinsInput.value, 10) || 0)) : spins))) {
+    
+    const isStartMiddle = calcStartMiddleCheckbox.checked;
+    const startSpins = parseInt(calcStartSpinsInput.value, 10) || 0;
+    const playerSpins = isStartMiddle ? Math.max(0, spins - startSpins) : spins;
+    
+    if (big + reg > spins || (useGrape && grape > playerSpins)) {
       alert("入力された役の回数がゲーム数を超えています。");
       return;
     }
@@ -422,7 +432,7 @@ document.addEventListener("DOMContentLoaded", () => {
     calcStartSpinsWrapper.style.display = e.target.checked ? "block" : "none";
     playerSpinsWrapper.style.display = e.target.checked ? "inline" : "none";
     
-    // Set current spins to start spins to avoid negative own spins initially
+    // Adjust total spins if start G is set
     if (e.target.checked) {
       const startSpins = parseInt(calcStartSpinsInput.value, 10) || 0;
       const currentSpins = parseInt(calcSpinsInput.value, 10) || 0;
@@ -445,20 +455,42 @@ document.addEventListener("DOMContentLoaded", () => {
       const inputElem = document.getElementById(targetId);
       
       if (inputElem) {
-        let currentVal = parseInt(inputElem.value, 10) || 0;
-        let newVal = currentVal + valToAdd;
-        
-        // Floor checks
-        if (targetId === "calc-spins" && newVal < 1) newVal = 1;
-        if (targetId !== "calc-spins" && newVal < 0) newVal = 0;
-        
-        // If current G goes below start G under middle setup, floor it at start G
-        if (targetId === "calc-spins" && calcStartMiddleCheckbox.checked) {
-          const startG = parseInt(calcStartSpinsInput.value, 10) || 0;
-          if (newVal < startG) newVal = startG;
+        if (targetId === "calc-current-g") {
+          // LINKED G COUNTER LOGIC
+          let currentVal = parseInt(inputElem.value, 10) || 0;
+          let newVal = currentVal + valToAdd;
+          if (newVal < 0) newVal = 0;
+          
+          const diff = newVal - currentVal;
+          inputElem.value = newVal;
+          
+          // Propagate difference to Total G (calc-spins)
+          let currentSpins = parseInt(calcSpinsInput.value, 10) || 0;
+          let newSpins = currentSpins + diff;
+          
+          // Floor check on total spins
+          if (calcStartMiddleCheckbox.checked) {
+            const startG = parseInt(calcStartSpinsInput.value, 10) || 0;
+            if (newSpins < startG) newSpins = startG;
+          } else {
+            if (newSpins < 1) newSpins = 1;
+          }
+          calcSpinsInput.value = newSpins;
+          
+        } else {
+          // BIG, REG, Grape counter buttons
+          let currentVal = parseInt(inputElem.value, 10) || 0;
+          let newVal = currentVal + valToAdd;
+          if (newVal < 0) newVal = 0;
+          
+          inputElem.value = newVal;
+          
+          // AUTO RESET LOGIC:
+          // When hitting a bonus (+1 BIG or +1 REG), reset Hamari G (calc-current-g) to 0!
+          if (valToAdd > 0 && (targetId === "calc-big" || targetId === "calc-reg")) {
+            calcCurrentGInput.value = 0;
+          }
         }
-        
-        inputElem.value = newVal;
         
         // Update state, calculate, and save
         updateActiveSessionStateFromForm();
@@ -487,6 +519,7 @@ document.addEventListener("DOMContentLoaded", () => {
       name: name,
       modelKey: modelKey,
       spins: 1000,
+      currentG: 0,
       startSpins: 0,
       isStartMiddle: false,
       big: 3,
@@ -544,6 +577,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!active) return;
     
     const spins = parseInt(calcSpinsInput.value, 10) || 0;
+    const currentG = parseInt(calcCurrentGInput.value, 10) || 0;
     const big = parseInt(calcBigInput.value, 10) || 0;
     const reg = parseInt(calcRegInput.value, 10) || 0;
     const useGrape = calcUseGrapeCheckbox.checked;
@@ -567,8 +601,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const highSettingsProb = highSettingsTotalLabel.textContent;
     
-    // Format displays Spins (e.g. 3000G (My: 1000G))
-    const spinsDisplayString = isStartMiddle ? `${spins}G (自:${playerSpins}G)` : `${spins}G`;
+    // Format displays Spins (e.g. 3000G (My: 1000G) [Hamari: 120G])
+    const spinsDisplayString = isStartMiddle 
+      ? `${spins}G (自:${playerSpins}G) [はまり:${currentG}G]` 
+      : `${spins}G [はまり:${currentG}G]`;
     
     const checkpoint = {
       time: timeStr,

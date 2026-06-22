@@ -168,21 +168,27 @@
                 <input class="form-control" type="number" id="calc-start-spins" value="0" min="0" placeholder="例: 2000">
               </div>
               
-              <!-- Spins Input and Counter Buttons -->
+              <!-- Total G Input (No counter buttons, linked with current G) -->
+              <div class="form-group">
+                <label class="form-label" for="calc-spins">現在の総回転数 (データ表示機の総ゲーム数)</label>
+                <input class="form-control" type="number" id="calc-spins" value="1000" min="1" placeholder="例: 3000">
+              </div>
+              
+              <!-- Spins since last bonus (Hamari G, with counter buttons) -->
               <div class="form-group">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                  <label class="form-label" for="calc-spins" style="margin-bottom: 0;">データ表示機ゲーム数 (現在の総回転数)</label>
+                  <label class="form-label" for="calc-current-g" style="margin-bottom: 0;">前回のボーナスからの回転数 (現在のはまりG)</label>
                   <span id="player-spins-wrapper" style="font-size: 0.8rem; color: var(--text-secondary); display: none;">
                     自分の消化G: <strong id="player-spins-display" style="color: var(--color-pink-light);">0</strong> G
                   </span>
                 </div>
                 <div class="counter-input-group">
-                  <input class="form-control" type="number" id="calc-spins" value="1000" min="1" placeholder="例: 3000">
+                  <input class="form-control" type="number" id="calc-current-g" value="0" min="0" placeholder="例: 120">
                   <div class="counter-buttons">
-                    <button class="btn-counter" data-target="calc-spins" data-val="100">+100</button>
-                    <button class="btn-counter" data-target="calc-spins" data-val="10">+10</button>
-                    <button class="btn-counter" data-target="calc-spins" data-val="1">+1</button>
-                    <button class="btn-counter btn-counter-minus" data-target="calc-spins" data-val="-10">-10</button>
+                    <button class="btn-counter" data-target="calc-current-g" data-val="100">+100</button>
+                    <button class="btn-counter" data-target="calc-current-g" data-val="10">+10</button>
+                    <button class="btn-counter" data-target="calc-current-g" data-val="1">+1</button>
+                    <button class="btn-counter btn-counter-minus" data-target="calc-current-g" data-val="-10">-10</button>
                   </div>
                 </div>
               </div>
