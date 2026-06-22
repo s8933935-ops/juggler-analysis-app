@@ -1017,3 +1017,65 @@ body {
   align-items: center;
   gap: 0.5rem;
 }
+
+/* Responsive Design for Mobile/Tablet */
+@media (max-width: 900px) {
+  .app-container {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    position: static;
+    width: 100%;
+    height: auto;
+    padding: 1.5rem;
+    border-right: none;
+    border-bottom: 1px solid var(--bg-card-border);
+  }
+  
+  .logo-container {
+    margin-bottom: 1.5rem;
+  }
+  
+  .nav-menu {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  
+  .nav-item {
+    width: auto;
+  }
+  
+  .nav-link {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .hero-title {
+    font-size: 1.8rem;
+  }
+  .card {
+    padding: 1.2rem;
+  }
+  .nav-menu {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .nav-item {
+    width: 100%;
+  }
+  .sim-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

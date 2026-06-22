@@ -70,7 +70,7 @@ window.calculateSlumpData = function(jackpotProb, slumpG) {
   const trials = 8000;
   // Expected number of slump occurrences (arrivals of slump of size slumpG)
   // The probability of starting a slump at any spin is P_jackpot * (1-P_jackpot)^slumpG
-  const lambda = (trials - slumpG) * jackpotProb * Math.pow(pMiss, slumpG);
+  const lambda = Math.max(0, trials - slumpG) * jackpotProb * Math.pow(pMiss, slumpG);
   const pSlumpInDay = 1 - Math.exp(-lambda);
   
   return {

@@ -98,7 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="spec-card-specs">
           <div class="spec-row-item">
             <span class="spec-row-label">合成確率 (S1〜S6)</span>
-            <span class="spec-row-value">1/${Math.round(1/(1/s1.bigProb + 1/s1.regProb))} 〜 1/${Math.round(1/(1/s6.bigProb + 1/s6.regProb))}</span>
+            <span class="spec-row-value">1/${(1/(1/s1.bigProb + 1/s1.regProb)).toFixed(1)} 〜 1/${(1/(1/s6.bigProb + 1/s6.regProb)).toFixed(1)}</span>
           </div>
           <div class="spec-row-item">
             <span class="spec-row-label">機械割 (S1〜S6)</span>
@@ -155,7 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
     probabilityBars.innerHTML = "";
     
     for (let s = 1; s <= 6; s++) {
-      const val = probabilities ? probabilities[s - 1] : 16.66; // default 1/6 flat
+      const val = probabilities ? probabilities[s - 1] : (100 / 6); // default 1/6 flat
       const isHigh = s >= 4;
       
       const barContainer = document.createElement("div");
