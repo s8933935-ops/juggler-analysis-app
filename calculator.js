@@ -32,7 +32,7 @@ window.calculateBayesianSettings = function(modelKey, spins, bigCount, regCount,
       const pGrape = window.getGrapeProbability(modelKey, s);
       if (pGrape > 0) {
         const gSpins = (grapeSpins !== null && grapeSpins !== undefined) ? grapeSpins : spins;
-        logL += grapeCount * Math.log(pGrape) + (gSpins - grapeCount) * Math.log(1 - gSpins);
+        logL += grapeCount * Math.log(pGrape) + (gSpins - grapeCount) * Math.log(1 - pGrape);
       }
     }
     
