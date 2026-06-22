@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>はまりの向こう側へ - ジャグラー完全解析・シミュレータ</title>
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="logo-container">
+        <div class="logo-gogo-badge">GOGO!</div>
+        <div class="logo-subtitle">Beyond the Slump</div>
+        <div class="logo-title-sub">はまりの向こう側へ</div>
+      </div>
+      
+      <nav class="nav-menu">
+        <li class="nav-item">
+          <a class="nav-link active" data-tab="tab-specs">
+            <i class="fa-solid fa-list"></i>
+            <span>機種スペック比較</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-tab="tab-estimator">
+            <i class="fa-solid fa-calculator"></i>
+            <span>設定判別ツール</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-tab="tab-slump">
+            <i class="fa-solid fa-chart-line"></i>
+            <span>はまり確率論</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-tab="tab-row-sim">
+            <i class="fa-solid fa-microchip"></i>
+            <span>20台島シミュレータ</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-tab="tab-guide">
+            <i class="fa-solid fa-building-columns"></i>
+            <span>ホール選びの極意</span>
+          </a>
+        </li>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <p>Juggler Analysis v1.0.0</p>
+        <p>&copy; 2026 Antigravity-IDE</p>
+      </div>
+    </aside>
+    
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- HERO BANNER -->
+      <section class="hero-banner">
+        <h1 class="hero-title">A-Typeのスランプと確率の真実: <span>はまりの向こう側へ</span></h1>
+        <p class="hero-lead">「ジャグラー」全機種の公式スペックと数学的な確率分布に基づき、短期的な偏り・はまりの真実、設定推測のロジック、そしてホールの設定配分がもたらす錯覚を科学的に解き明かします。</p>
+      </section>
+
+      <!-- TAB 1: SPECS COMPANION -->
+      <section id="tab-specs" class="tab-pane active">
+        <div class="card">
+          <h2 class="card-title"><i class="fa-solid fa-list"></i> 対象機種スペック一覧</h2>
+          <p class="guide-desc">解析対象とする最新のジャグラーシリーズを選択してください。各設定のボーナス確率、ぶどう確率、機械割が以下に表示されます。</p>
+          
+          <div class="spec-grid-cards" id="spec-cards-container">
+            <!-- Cards will be dynamically inserted here -->
+          </div>
+          
+          <div class="spec-table-container">
+            <table class="spec-table" id="spec-detail-table">
+              <thead>
+                <tr>
+                  <th>設定</th>
+                  <th>BIG確率</th>
+                  <th>REG確率</th>
+                  <th>合成確率</th>
+                  <th>ぶどう確率 (目安)</th>
+                  <th>機械割 (メーカー発表)</th>
+                </tr>
+              </thead>
+              <tbody id="spec-detail-body">
+                <!-- Table rows will be dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: SETTING ESTIMATOR (BAYESIAN) -->
+      <section id="tab-estimator" class="tab-pane">
+        <div class="card">
+          <h2 class="card-title"><i class="fa-solid fa-calculator"></i> ベイズ推定・設定判別ツール</h2>
+          <p class="guide-desc">現在の回転数と各ボーナス回数を入力することで、ベイズの定理に基づいて各設定である確率（事後確率）をリアルタイムに計算します。</p>
+          
+          <div class="estimator-layout" style="margin-top: 1.5rem;">
+            <!-- Inputs -->
+            <div class="estimator-inputs">
+              <div class="form-group">
+                <label class="form-label" for="calc-model">機種選択</label>
+                <select class="form-control" id="calc-model">
+                  <!-- Dynamically filled -->
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="calc-spins">総ゲーム数 (G)</label>
+                <input class="form-control" type="number" id="calc-spins" value="3000" min="1" placeholder="例: 3000">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="calc-big">BIG回数</label>
+                <input class="form-control" type="number" id="calc-big" value="10" min="0" placeholder="例: 10">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="calc-reg">REG回数</label>
+                <input class="form-control" type="number" id="calc-reg" value="12" min="0" placeholder="例: 12">
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                  <input type="checkbox" id="calc-use-grape" style="transform: scale(1.2);">
+                  <span>ぶどう回数も考慮する (数え値)</span>
+                </label>
+              </div>
+              
+              <div class="form-group" id="calc-grape-wrapper" style="display: none;">
+                <label class="form-label" for="calc-grape">ぶどう回数</label>
+                <input class="form-control" type="number" id="calc-grape" value="480" min="0" placeholder="例: 480">
+              </div>
+              
+              <button class="btn btn-primary" id="btn-calculate" style="width: 100%; margin-top: 1rem;">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> 設定を判別する
+              </button>
+            </div>
+            
+            <!-- Outputs -->
+            <div class="estimator-results">
+              <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">設定推測結果の分布</h3>
+              
+              <div class="probability-bar-list" id="probability-bars">
+                <!-- Bars will be dynamically generated here -->
+              </div>
+              
+              <div style="margin-top: 2rem; padding: 1.2rem; background-color: rgba(157, 78, 221, 0.1); border-radius: 8px; border: 1px dashed var(--bg-card-border);">
+                <div style="display: flex; justify-content: space-between; font-size: 0.95rem; font-weight: 700;">
+                  <span>高設定 (設定4・5・6) の可能性:</span>
+                  <span id="high-settings-total" style="color: var(--color-pink-light); font-size: 1.1rem;">0.00%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: SLUMP MATHEMATICS -->
+      <section id="tab-slump" class="tab-pane">
+        <div class="card">
+          <h2 class="card-title"><i class="fa-solid fa-chart-line"></i> 「はまりの向こう側へ」確率の数学的証明</h2>
+          <p class="guide-desc">Aタイプ（ジャグラー）において、ボーナスが当たらずに特定の回転数まで「はまる」確率と、その数学的背景について解説します。</p>
+          
+          <div class="grid-2" style="margin-top: 1.5rem;">
+            <div class="slump-math-box">
+              <h3 style="font-size: 1.2rem; font-weight: 700;">1. 単発はまりの発生確率</h3>
+              <p>ボーナス合成確率が $P$ であるとき、現在から連続して $N$ ゲーム間、ボーナスに当選しない確率 $P(N)$ は、幾何分布に従って次のように求められます。</p>
+              
+              <div class="math-formula">
+                P(N) = (1 - P)^N
+              </div>
+              
+              <p>例えば、合成確率が <strong id="slump-model-prob-label">1/135 (設定6目安)</strong> の台において、各ゲームで外す確率は $134/135 \approx 99.26\%$ です。これが $N$ 回連続する確率を求めます。</p>
+              
+              <div class="form-group" style="margin-top: 1rem;">
+                <label class="form-label" for="slump-target-model">モデル機種選択</label>
+                <select class="form-control" id="slump-target-model">
+                  <!-- Dynamically filled -->
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="slump-target-setting">設定選択</label>
+                <select class="form-control" id="slump-target-setting">
+                  <option value="1">設定1</option>
+                  <option value="2">設定2</option>
+                  <option value="3">設定3</option>
+                  <option value="4">設定4</option>
+                  <option value="5">設定5</option>
+                  <option value="6" selected>設定6</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="slump-table-wrapper">
+              <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem;">はまり深度別確率 (選択された設定ベース)</h3>
+              
+              <table class="spec-table">
+                <thead>
+                  <tr>
+                    <th>はまりゲーム数</th>
+                    <th>その回転数に到達する確率</th>
+                    <th>遭遇頻度 (何回に1回発生するか)</th>
+                  </tr>
+                </thead>
+                <tbody id="slump-probability-rows">
+                  <!-- Dynamically updated -->
+                </tbody>
+              </table>
+              
+              <div style="margin-top: 1.5rem; background-color: rgba(255, 0, 127, 0.05); padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(255, 0, 127, 0.2);">
+                <h4 style="color: var(--color-pink-light); font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem;"><i class="fa-solid fa-triangle-exclamation"></i> 重要なポイント: 1日の稼働中での発生率</h4>
+                <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                  「800Gはまりは約0.26%（約380回に1回）の珍しい事象」ですが、<b>1日（8,000G）回す場合、その8,000Gの間のどこかで800G以上のはまりに1回以上遭遇する確率は約15%〜20%</b>に跳ね上がります。これは大数の法則と試行回数の多さがもたらす必然であり、高設定であっても避けることはできません。
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: 20-MACHINE ISLAND SIMULATOR -->
+      <section id="tab-row-sim" class="tab-pane">
+        <div class="card">
+          <h2 class="card-title"><i class="fa-solid fa-microchip"></i> 20台島シミュレータ &amp; 1000枚オーバー確率</h2>
+          <p class="guide-desc">ホールに設置された20台の「島」をシミュレートします。たとえ全台が「設定1」であっても、何台かが優秀台に見える錯覚（1000枚以上のプラスで終了する台がどれほど出るか）を実証します。</p>
+          
+          <!-- Presets and distribution selection -->
+          <div class="sim-controls">
+            <div class="form-group" style="margin-bottom: 0; min-width: 250px;">
+              <label class="form-label" for="sim-preset">島の設定配分プリセット</label>
+              <select class="form-control" id="sim-preset">
+                <option value="all-1">全台設定1 (一般的なボッタクリ店)</option>
+                <option value="mixed-low">設定1・2のみ (通常の平日配分)</option>
+                <option value="mixed-mid">設定3・4多め (メリハリ調整店)</option>
+                <option value="all-6">全台設定6 (幻の超優良店・グランドオープン)</option>
+                <option value="custom">カスタム配分 (個別に設定)</option>
+              </select>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0; min-width: 200px;">
+              <label class="form-label" for="sim-model">シミュレート機種</label>
+              <select class="form-control" id="sim-model">
+                <!-- Dynamically filled -->
+              </select>
+            </div>
+            
+            <button class="btn btn-primary" id="btn-start-sim">
+              <i class="fa-solid fa-play"></i> 1日分(8000G)シミュレート開始
+            </button>
+          </div>
+          
+          <!-- Sim Progress Bar -->
+          <div class="sim-progress-wrapper" id="sim-progress">
+            <div class="sim-progress-header">
+              <span>シミュレーションを実行中...</span>
+              <span id="sim-progress-text">0 / 8000 G</span>
+            </div>
+            <div class="sim-progress-bar-bg">
+              <div class="sim-progress-bar-fill" id="sim-progress-fill"></div>
+            </div>
+          </div>
+          
+          <!-- The Visual 20-Machine Row Layout -->
+          <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; color: var(--text-secondary);">20台島レイアウト (ランプが光ると1000枚到達)</h3>
+          <div class="sim-grid-island" id="island-grid">
+            <!-- 20 Cabinets will be generated here -->
+          </div>
+          
+          <!-- Statistical output panel -->
+          <div class="sim-stats-grid">
+            <div class="sim-stat-box">
+              <div class="sim-stat-val" id="stat-peak-1000">0</div>
+              <div class="sim-stat-lbl">1000枚以上で終了した台数</div>
+            </div>
+            <div class="sim-stat-box">
+              <div class="sim-stat-val highlight" id="stat-at-least-one-prob">--%</div>
+              <div class="sim-stat-lbl">この設定配分で少なくとも1台が<br>1000枚を超える理論上の確率</div>
+            </div>
+            <div class="sim-stat-box">
+              <div class="sim-stat-val" id="stat-max-output">--</div>
+              <div class="sim-stat-lbl">島全体の最高差枚数 (枚)</div>
+            </div>
+            <div class="sim-stat-box">
+              <div class="sim-stat-val" id="stat-island-average">--</div>
+              <div class="sim-stat-lbl">島全体の平均差枚数 (枚)</div>
+            </div>
+          </div>
+          
+          <!-- Explanation block -->
+          <div style="margin-top: 2rem; background-color: rgba(157, 78, 221, 0.08); border: 1px solid var(--bg-card-border); padding: 1.5rem; border-radius: 12px;">
+            <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; color: #fff;">
+              <i class="fa-solid fa-lightbulb"></i> 「全台設定1」の島で発生する優秀台の罠
+            </h3>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.7;">
+              シミュレータで「全台設定1」を選択して実行してみてください。<b>約85%〜88%の確率で、島の中の少なくとも1台が「+1000枚以上」の差枚数でプラス終了します。</b><br>
+              また、時には+2000枚を超える猛烈な吹き上がりを見せる台も現れます。このデータを見た一般的なプレイヤーは、「この店には高設定が使われている！」と勘違いしてしまいます。しかし実際は、Aタイプの確率的なバラつき（標準偏差）が引き起こす単なる「上振れ」に過ぎません。<b>高設定を見抜くには、1台の出玉だけではなく、島全体の平均差枚やREG確率の分布を見る必要があります。</b>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 5: PARLOR GUIDE -->
+      <section id="tab-guide" class="tab-pane">
+        <div class="card">
+          <h2 class="card-title"><i class="fa-solid fa-building-columns"></i> ジャグラーで勝つための「ホール選びの極意」</h2>
+          <p class="guide-desc">単なる設定判別ツール頼みでは勝てません。真のプロフェッショナルが実践する、本当に高設定が入るホールの選定方法について解説します。</p>
+          
+          <div class="grid-2" style="margin-top: 1.5rem;" id="guide-patterns-container">
+            <!-- Dynamic guide cards will be rendered here -->
+          </div>
+        </div>
+      </section>
+      
+      <!-- INTERACTIVE LAMP WIDGET -->
+      <section class="interactive-lamp-section">
+        <div class="gogo-lamp-interactive" id="interactive-gogo-lamp">
+          <span class="gogo-text-large">GOGO!</span>
+        </div>
+        <p class="lamp-caption">「GOGO! ランプ」をクリックして、点灯の喜びと癒しを体感してください (1/8の確率で先光り演出発生！)</p>
+      </section>
+      
+    </main>
+  </div>
+
+  <!-- Audio elements for the GOGO! click (simulated sound synthesizer using Web Audio API in JS, so no external assets needed!) -->
+  <script src="simulator.js"></script>
+  <script src="calculator.js"></script>
+  <script src="guide.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
