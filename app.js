@@ -432,6 +432,180 @@ document.addEventListener("DOMContentLoaded", () => {
         grapeCompareGrid.innerHTML = gridHtml;
       }
     }
+
+    // Update BIG rate display and comparison grid
+    const bigRateDisplay = document.getElementById("big-rate-display");
+    const bigCompareGrid = document.getElementById("big-compare-grid");
+    const bigCompareModelName = document.getElementById("big-compare-model-name");
+    const bigCount = parseInt(calcBigInput.value, 10) || 0;
+    
+    if (bigRateDisplay) {
+      if (spins > 0 && bigCount > 0) {
+        const denominator = spins / bigCount;
+        bigRateDisplay.textContent = `1/${denominator.toFixed(1)}`;
+      } else {
+        bigRateDisplay.textContent = "1/--";
+      }
+    }
+    
+    if (model) {
+      if (bigCompareModelName) {
+        bigCompareModelName.textContent = model.name;
+      }
+      
+      if (bigCompareGrid) {
+        let gridHtml = "";
+        const playerBigDenominator = (spins > 0 && bigCount > 0) ? (spins / bigCount) : null;
+        
+        let closestSetting = null;
+        let minDiff = Infinity;
+        if (playerBigDenominator !== null) {
+          for (let s = 1; s <= 6; s++) {
+            const bigProb = model.settings[s].bigProb;
+            const diffVal = Math.abs(playerBigDenominator - bigProb);
+            if (diffVal < minDiff) {
+              minDiff = diffVal;
+              closestSetting = s;
+            }
+          }
+        }
+        
+        for (let s = 1; s <= 6; s++) {
+          const bigProb = model.settings[s].bigProb;
+          const isHighSetting = s >= 4;
+          
+          let diffText = "--";
+          let diffStyle = "color: var(--text-muted);";
+          
+          if (playerBigDenominator !== null) {
+            const diff = playerBigDenominator - bigProb;
+            const diffSign = diff >= 0 ? "+" : "";
+            diffText = `${diffSign}${diff.toFixed(1)}`;
+            if (diff > 0.5) {
+              // worse / heavier (larger denominator is less frequent)
+              diffStyle = "color: var(--color-pink-light);";
+            } else if (diff < -0.5) {
+              // better / lighter (smaller denominator is more frequent)
+              diffStyle = "color: #00ff7f; font-weight: 600;";
+            } else {
+              diffStyle = "color: var(--text-primary);";
+            }
+          }
+          
+          const isClosest = (s === closestSetting);
+          
+          let itemStyle = "background: rgba(8, 4, 15, 0.6); padding: 0.4rem; border-radius: 6px; text-align: center; border: 1px solid rgba(157, 78, 221, 0.15); transition: all 0.3s ease; position: relative;";
+          if (isClosest) {
+            if (isHighSetting) {
+              itemStyle = "background: linear-gradient(135deg, rgba(25, 17, 43, 0.9) 0%, rgba(255, 0, 127, 0.15) 100%); padding: 0.4rem; border-radius: 6px; text-align: center; border: 1px solid var(--color-pink-glow); box-shadow: 0 0 10px rgba(255, 0, 127, 0.25); position: relative;";
+            } else {
+              itemStyle = "background: linear-gradient(135deg, rgba(25, 17, 43, 0.9) 0%, rgba(255, 0, 127, 0.25) 100%); padding: 0.4rem; border-radius: 6px; text-align: center; border: 1px solid var(--color-violet-glow); box-shadow: 0 0 10px rgba(157, 78, 221, 0.25); position: relative;";
+            }
+          }
+          
+          const badgeHtml = isClosest 
+            ? `<span style="position: absolute; top: -5px; right: -5px; background: ${isHighSetting ? 'var(--color-pink-glow)' : 'var(--color-violet-glow)'}; color: #fff; font-size: 0.55rem; padding: 1px 4px; border-radius: 4px; font-weight: 800; transform: scale(0.9);">近い</span>` 
+            : "";
+          
+          gridHtml += `
+            <div class="big-compare-item" data-setting="${s}" style="${itemStyle}">
+              ${badgeHtml}
+              <div style="font-size: 0.65rem; color: ${isClosest ? '#fff' : 'var(--text-muted)'}; font-weight: bold;">設定 ${s}</div>
+              <div class="big-compare-val" style="font-size: 0.8rem; font-family: 'Outfit'; font-weight: 700; color: ${isClosest ? '#fff' : 'var(--text-secondary)'};">1/${bigProb.toFixed(1)}</div>
+              <div class="big-compare-diff" style="font-size: 0.65rem; font-family: 'Outfit'; ${diffStyle} margin-top: 0.1rem;">${diffText}</div>
+            </div>
+          `;
+        }
+        bigCompareGrid.innerHTML = gridHtml;
+      }
+    }
+
+    // Update REG rate display and comparison grid
+    const regRateDisplay = document.getElementById("reg-rate-display");
+    const regCompareGrid = document.getElementById("reg-compare-grid");
+    const regCompareModelName = document.getElementById("reg-compare-model-name");
+    const regCount = parseInt(calcRegInput.value, 10) || 0;
+    
+    if (regRateDisplay) {
+      if (spins > 0 && regCount > 0) {
+        const denominator = spins / regCount;
+        regRateDisplay.textContent = `1/${denominator.toFixed(1)}`;
+      } else {
+        regRateDisplay.textContent = "1/--";
+      }
+    }
+    
+    if (model) {
+      if (regCompareModelName) {
+        regCompareModelName.textContent = model.name;
+      }
+      
+      if (regCompareGrid) {
+        let gridHtml = "";
+        const playerRegDenominator = (spins > 0 && regCount > 0) ? (spins / regCount) : null;
+        
+        let closestSetting = null;
+        let minDiff = Infinity;
+        if (playerRegDenominator !== null) {
+          for (let s = 1; s <= 6; s++) {
+            const regProb = model.settings[s].regProb;
+            const diffVal = Math.abs(playerRegDenominator - regProb);
+            if (diffVal < minDiff) {
+              minDiff = diffVal;
+              closestSetting = s;
+            }
+          }
+        }
+        
+        for (let s = 1; s <= 6; s++) {
+          const regProb = model.settings[s].regProb;
+          const isHighSetting = s >= 4;
+          
+          let diffText = "--";
+          let diffStyle = "color: var(--text-muted);";
+          
+          if (playerRegDenominator !== null) {
+            const diff = playerRegDenominator - regProb;
+            const diffSign = diff >= 0 ? "+" : "";
+            diffText = `${diffSign}${diff.toFixed(1)}`;
+            if (diff > 0.5) {
+              // worse / heavier
+              diffStyle = "color: var(--color-pink-light);";
+            } else if (diff < -0.5) {
+              // better / lighter
+              diffStyle = "color: #00ff7f; font-weight: 600;";
+            } else {
+              diffStyle = "color: var(--text-primary);";
+            }
+          }
+          
+          const isClosest = (s === closestSetting);
+          
+          let itemStyle = "background: rgba(8, 4, 15, 0.6); padding: 0.4rem; border-radius: 6px; text-align: center; border: 1px solid rgba(157, 78, 221, 0.15); transition: all 0.3s ease; position: relative;";
+          if (isClosest) {
+            if (isHighSetting) {
+              itemStyle = "background: linear-gradient(135deg, rgba(25, 17, 43, 0.9) 0%, rgba(255, 0, 127, 0.15) 100%); padding: 0.4rem; border-radius: 6px; text-align: center; border: 1px solid var(--color-pink-glow); box-shadow: 0 0 10px rgba(255, 0, 127, 0.25); position: relative;";
+            } else {
+              itemStyle = "background: linear-gradient(135deg, rgba(25, 17, 43, 0.9) 0%, rgba(255, 0, 127, 0.25) 100%); padding: 0.4rem; border-radius: 6px; text-align: center; border: 1px solid var(--color-violet-glow); box-shadow: 0 0 10px rgba(157, 78, 221, 0.25); position: relative;";
+            }
+          }
+          
+          const badgeHtml = isClosest 
+            ? `<span style="position: absolute; top: -5px; right: -5px; background: ${isHighSetting ? 'var(--color-pink-glow)' : 'var(--color-violet-glow)'}; color: #fff; font-size: 0.55rem; padding: 1px 4px; border-radius: 4px; font-weight: 800; transform: scale(0.9);">近い</span>` 
+            : "";
+          
+          gridHtml += `
+            <div class="reg-compare-item" data-setting="${s}" style="${itemStyle}">
+              ${badgeHtml}
+              <div style="font-size: 0.65rem; color: ${isClosest ? '#fff' : 'var(--text-muted)'}; font-weight: bold;">設定 ${s}</div>
+              <div class="reg-compare-val" style="font-size: 0.8rem; font-family: 'Outfit'; font-weight: 700; color: ${isClosest ? '#fff' : 'var(--text-secondary)'};">1/${regProb.toFixed(1)}</div>
+              <div class="reg-compare-diff" style="font-size: 0.65rem; font-family: 'Outfit'; ${diffStyle} margin-top: 0.1rem;">${diffText}</div>
+            </div>
+          `;
+        }
+        regCompareGrid.innerHTML = gridHtml;
+      }
+    }
   }
   
   function runCalculation() {

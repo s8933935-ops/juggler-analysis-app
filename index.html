@@ -195,24 +195,54 @@
               
               <!-- BIG Input and Counter Buttons -->
               <div class="form-group">
-                <label class="form-label" for="calc-big">BIG回数</label>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                  <label class="form-label" for="calc-big" style="margin-bottom: 0;">BIG回数</label>
+                  <span id="big-rate-wrapper" style="font-size: 0.8rem; color: var(--text-secondary);">
+                    BIG確率: <strong id="big-rate-display" style="color: var(--color-pink-light);">1/--</strong>
+                  </span>
+                </div>
                 <div class="counter-input-group">
                   <input class="form-control" type="number" id="calc-big" value="3" min="0" placeholder="例: 10">
-                  <div class="counter-buttons-compact">
+                  <div class="counter-buttons-compact" style="margin-bottom: 0.8rem;">
                     <button class="btn-counter-large" data-target="calc-big" data-val="1">+1 BIG</button>
                     <button class="btn-counter btn-counter-minus" data-target="calc-big" data-val="-1">-1</button>
+                  </div>
+                </div>
+                <!-- BIG Setting Comparison Grid -->
+                <div class="big-compare-box" id="calc-big-compare-box" style="margin-top: 0.8rem; padding: 0.8rem; background: rgba(15, 9, 28, 0.4); border: 1px solid var(--bg-card-border); border-radius: 8px;">
+                  <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                    <span><i class="fa-solid fa-code-compare"></i> 設定別BIG理論値との比較</span>
+                    <span id="big-compare-model-name" style="font-size: 0.7rem; color: var(--text-muted);">--</span>
+                  </div>
+                  <div class="big-compare-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem;" id="big-compare-grid">
+                    <!-- Dynamically populated -->
                   </div>
                 </div>
               </div>
               
               <!-- REG Input and Counter Buttons -->
               <div class="form-group">
-                <label class="form-label" for="calc-reg">REG回数</label>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                  <label class="form-label" for="calc-reg" style="margin-bottom: 0;">REG回数</label>
+                  <span id="reg-rate-wrapper" style="font-size: 0.8rem; color: var(--text-secondary);">
+                    REG確率: <strong id="reg-rate-display" style="color: var(--color-pink-light);">1/--</strong>
+                  </span>
+                </div>
                 <div class="counter-input-group">
                   <input class="form-control" type="number" id="calc-reg" value="4" min="0" placeholder="例: 12">
-                  <div class="counter-buttons-compact">
-                    <button class="btn-counter-large" data-target="calc-reg" data-val="1" style="background: linear-gradient(135deg, #2e1040 0%, #ff007f 100%);">+1 REG</button>
+                  <div class="counter-buttons-compact" style="margin-bottom: 0.8rem;">
+                    <button class="btn-counter-large" data-target="calc-reg" data-val="1" style="background: linear-gradient(135deg, #18112c 0%, #ff007f 100%);">+1 REG</button>
                     <button class="btn-counter btn-counter-minus" data-target="calc-reg" data-val="-1">-1</button>
+                  </div>
+                </div>
+                <!-- REG Setting Comparison Grid -->
+                <div class="reg-compare-box" id="calc-reg-compare-box" style="margin-top: 0.8rem; padding: 0.8rem; background: rgba(15, 9, 28, 0.4); border: 1px solid var(--bg-card-border); border-radius: 8px;">
+                  <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                    <span><i class="fa-solid fa-code-compare"></i> 設定別REG理論値との比較</span>
+                    <span id="reg-compare-model-name" style="font-size: 0.7rem; color: var(--text-muted);">--</span>
+                  </div>
+                  <div class="reg-compare-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem;" id="reg-compare-grid">
+                    <!-- Dynamically populated -->
                   </div>
                 </div>
               </div>
