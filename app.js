@@ -19,6 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnCalculate = document.getElementById("btn-calculate");
   const probabilityBars = document.getElementById("probability-bars");
   const highSettingsTotalLabel = document.getElementById("high-settings-total");
+  const grapeRateDisplay = document.getElementById("grape-rate-display");
   
   // Decoupled Counter Elements
   const calcStartMiddleCheckbox = document.getElementById("calc-start-middle");
@@ -317,6 +318,7 @@ document.addEventListener("DOMContentLoaded", () => {
     liveEstSessionName.textContent = `[${active.name}]`;
     
     updatePlayerSpinsDisplay();
+    updateGrapeRateDisplay();
     renderCheckpointsList(active.checkpoints);
     
     // Automatically trigger calculation on load
@@ -330,6 +332,106 @@ document.addEventListener("DOMContentLoaded", () => {
     
     const playerSpins = isStartMiddle ? Math.max(0, spins - startSpins) : spins;
     playerSpinsDisplay.textContent = playerSpins;
+  }
+  
+  function updateGrapeRateDisplay() {
+    if (!grapeRateDisplay) return;
+    
+    const spins = parseInt(calcSpinsInput.value, 10) || 0;
+    const startSpins = parseInt(calcStartSpinsInput.value, 10) || 0;
+    const isStartMiddle = calcStartMiddleCheckbox.checked;
+    const playerSpins = isStartMiddle ? Math.max(0, spins - startSpins) : spins;
+    
+    const grapeCount = parseInt(calcGrapeInput.value, 10) || 0;
+    
+    if (playerSpins > 0 && grapeCount > 0) {
+      const denominator = playerSpins / grapeCount;
+      const rate = (grapeCount / playerSpins) * 100;
+      grapeRateDisplay.textContent = `1/${denominator.toFixed(2)} (${rate.toFixed(1)}%)`;
+    } else {
+      grapeRateDisplay.textContent = "1/--";
+    }
+
+    // Update grape theoretical probability comparison grid (if elements exist)
+    const grapeCompareGrid = document.getElementById("grape-compare-grid");
+    const grapeCompareModelName = document.getElementById("grape-compare-model-name");
+    
+    const modelKey = calcModelSelect.value;
+    const model = window.JugglerModels[modelKey];
+    
+    if (model) {
+      if (grapeCompareModelName) {
+        grapeCompareModelName.textContent = model.name;
+      }
+      
+      if (grapeCompareGrid) {
+        let gridHtml = "";
+        const playerDenominator = (playerSpins > 0 && grapeCount > 0) ? (playerSpins / grapeCount) : null;
+        
+        // Find closest setting index if user rate is calculated
+        let closestSetting = null;
+        let minDiff = Infinity;
+        if (playerDenominator !== null) {
+          for (let s = 1; s <= 6; s++) {
+            const grapeProb = model.settings[s].grapeProb;
+            const diffVal = Math.abs(playerDenominator - grapeProb);
+            if (diffVal < minDiff) {
+              minDiff = diffVal;
+              closestSetting = s;
+            }
+          }
+        }
+        
+        for (let s = 1; s <= 6; s++) {
+          const grapeProb = model.settings[s].grapeProb;
+          const isHighSetting = s >= 4;
+          
+          let diffText = "--";
+          let diffStyle = "color: var(--text-muted);";
+          
+          if (playerDenominator !== null) {
+            const diff = playerDenominator - grapeProb;
+            const diffSign = diff >= 0 ? "+" : "";
+            diffText = `${diffSign}${diff.toFixed(2)}`;
+            if (diff > 0.005) {
+              // worse / heavier (larger denominator means fewer grapes)
+              diffStyle = "color: var(--color-pink-light);";
+            } else if (diff < -0.005) {
+              // better / lighter (smaller denominator means more grapes)
+              diffStyle = "color: #00ff7f; font-weight: 600;";
+            } else {
+              diffStyle = "color: var(--text-primary);";
+            }
+          }
+          
+          const isClosest = (s === closestSetting);
+          
+          // Style highlights for the closest setting card
+          let itemStyle = "background: rgba(8, 4, 15, 0.6); padding: 0.4rem; border-radius: 6px; text-align: center; border: 1px solid rgba(157, 78, 221, 0.15); transition: all 0.3s ease; position: relative;";
+          if (isClosest) {
+            if (isHighSetting) {
+              itemStyle = "background: linear-gradient(135deg, rgba(25, 17, 43, 0.9) 0%, rgba(255, 0, 127, 0.15) 100%); padding: 0.4rem; border-radius: 6px; text-align: center; border: 1px solid var(--color-pink-glow); box-shadow: 0 0 10px rgba(255, 0, 127, 0.25); position: relative;";
+            } else {
+              itemStyle = "background: linear-gradient(135deg, rgba(25, 17, 43, 0.9) 0%, rgba(157, 78, 221, 0.25) 100%); padding: 0.4rem; border-radius: 6px; text-align: center; border: 1px solid var(--color-violet-glow); box-shadow: 0 0 10px rgba(157, 78, 221, 0.25); position: relative;";
+            }
+          }
+          
+          const badgeHtml = isClosest 
+            ? `<span style="position: absolute; top: -5px; right: -5px; background: ${isHighSetting ? 'var(--color-pink-glow)' : 'var(--color-violet-glow)'}; color: #fff; font-size: 0.55rem; padding: 1px 4px; border-radius: 4px; font-weight: 800; transform: scale(0.9);">近い</span>` 
+            : "";
+          
+          gridHtml += `
+            <div class="grape-compare-item" data-setting="${s}" style="${itemStyle}">
+              ${badgeHtml}
+              <div style="font-size: 0.65rem; color: ${isClosest ? '#fff' : 'var(--text-muted)'}; font-weight: bold;">設定 ${s}</div>
+              <div class="grape-compare-val" style="font-size: 0.8rem; font-family: 'Outfit'; font-weight: 700; color: ${isClosest ? '#fff' : 'var(--text-secondary)'};">1/${grapeProb.toFixed(2)}</div>
+              <div class="grape-compare-diff" style="font-size: 0.65rem; font-family: 'Outfit'; ${diffStyle} margin-top: 0.1rem;">${diffText}</div>
+            </div>
+          `;
+        }
+        grapeCompareGrid.innerHTML = gridHtml;
+      }
+    }
   }
   
   function runCalculation() {
@@ -381,11 +483,13 @@ document.addEventListener("DOMContentLoaded", () => {
     elem.addEventListener("input", () => {
       updateActiveSessionStateFromForm();
       updatePlayerSpinsDisplay();
+      updateGrapeRateDisplay();
       runCalculation();
     });
     elem.addEventListener("change", () => {
       updateActiveSessionStateFromForm();
       updatePlayerSpinsDisplay();
+      updateGrapeRateDisplay();
       runCalculation();
     });
   });
@@ -443,6 +547,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     updateActiveSessionStateFromForm();
     updatePlayerSpinsDisplay();
+    updateGrapeRateDisplay();
     runCalculation();
   });
   
@@ -495,6 +600,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Update state, calculate, and save
         updateActiveSessionStateFromForm();
         updatePlayerSpinsDisplay();
+        updateGrapeRateDisplay();
         runCalculation();
       }
     }

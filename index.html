@@ -227,12 +227,28 @@
               
               <!-- Grape Input and Counter Buttons -->
               <div class="form-group" id="calc-grape-wrapper">
-                <label class="form-label" for="calc-grape">ぶどう回数</label>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                  <label class="form-label" for="calc-grape" style="margin-bottom: 0;">ぶどう回数</label>
+                  <span id="grape-rate-wrapper" style="font-size: 0.8rem; color: var(--text-secondary);">
+                    ぶどう確率: <strong id="grape-rate-display" style="color: var(--color-pink-light);">1/--</strong>
+                  </span>
+                </div>
                 <div class="counter-input-group">
                   <input class="form-control" type="number" id="calc-grape" value="160" min="0" placeholder="例: 480">
-                  <div class="counter-buttons-compact">
+                  <div class="counter-buttons-compact" style="margin-bottom: 0.8rem;">
                     <button class="btn-counter-large" data-target="calc-grape" data-val="1" style="background: linear-gradient(135deg, #18112c 0%, #00ff7f 100%); color: #08040f;">+1 ぶどう</button>
                     <button class="btn-counter btn-counter-minus" data-target="calc-grape" data-val="-1">-1</button>
+                  </div>
+                </div>
+                
+                <!-- Grape Setting Comparison Grid -->
+                <div class="grape-compare-box" id="calc-grape-compare-box" style="margin-top: 0.8rem; padding: 0.8rem; background: rgba(15, 9, 28, 0.4); border: 1px solid var(--bg-card-border); border-radius: 8px;">
+                  <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                    <span><i class="fa-solid fa-code-compare"></i> 設定別ぶどう理論値との比較</span>
+                    <span id="grape-compare-model-name" style="font-size: 0.7rem; color: var(--text-muted);">--</span>
+                  </div>
+                  <div class="grape-compare-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem;" id="grape-compare-grid">
+                    <!-- We will dynamically populate settings 1 to 6 here -->
                   </div>
                 </div>
               </div>
